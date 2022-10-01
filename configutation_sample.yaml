@@ -1,0 +1,33 @@
+# For Home Assistant
+
+sensors:
+
+  - platform: rest
+    # test:
+    # resource_template: http://0.0.0.0:8080/28 30 0 25 80 0
+
+    # adapt to yours: temperature, humidity, OUT, IN, home
+    # pressures may be 0, there isn't much difference
+    resource_template: http://0.0.0.0:8080/{{states('sensor.temperature_OUT')}} {{states('sensor.humidity_OUT')}} {{(state_attr('weather.home', 'pressure')|float * 100)|int }} {{states('sensor.temperature_IN')}} {{states('sensor.humidity_IN')}} {{(state_attr('weather.home', 'pressure')|float * 100)|int }}
+    
+    name: enthalpy_diff
+    value_template: "{{ value_json.diff }}"
+    json_attributes:
+      - a
+      - b
+      - unit
+    unit_of_measurement: "J/mc"
+  
+  # optional
+  - platform: template
+    sensors:
+      h_out:
+        friendly_name: "H out"
+        value_template: "{{ state_attr('sensor.enthalpy_diff', 'a') }}"
+        unit_of_measurement: "J/mc"
+      h_in:
+        friendly_name: "H in"
+        value_template: "{{ state_attr('sensor.enthalpy_diff', 'b') }}"
+        unit_of_measurement: "J/mc"
+
+# First time restart Home Assistant, then reload only REST entities.
